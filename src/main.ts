@@ -5,7 +5,7 @@
  *   conversor WebP client-side, 4 naturezas de vínculos, galeria multi-ângulos e Lightbox 400%.
  * - Destaca o Filtro Rápido por Linha (Macro-Linha + Linha por Montadora) solicitado pelo usuário.
  * - Cumpre rigorosamente o Design System `ui-ux-pro-max` (Daylight Counter Mode + Dark Mode Calibrado,
- *   zero emojis, 100% ícones vetoriais SVG Lucide, rolagem de página livre).
+ *   tipografia ampliada ultra-nítida em zoom 100% e Mobile-First, zero emojis, 100% ícones SVG Lucide).
  */
 
 import './styles.css';
@@ -36,6 +36,7 @@ interface SeedCatalogFileStructure {
 }
 
 const seedPayload = seedCatalogJson as unknown as SeedCatalogFileStructure;
+const THEME_STORAGE_KEY = 'sportinox-counter-theme';
 
 class SportinoxCounterCatalogApp {
   private storage = new CatalogStorageEngine();
@@ -63,6 +64,7 @@ class SportinoxCounterCatalogApp {
   private statusToastMessage = '';
 
   public async bootstrap(): Promise<void> {
+    this.loadSavedThemePreference();
     this.registerServiceWorker();
     await this.storage.init();
 
@@ -70,6 +72,36 @@ class SportinoxCounterCatalogApp {
     await this.storage.syncStaticCatalogUpdates(seedPayload.products || []);
     await this.reloadCatalogState();
     this.renderAppShell();
+  }
+
+  private loadSavedThemePreference(): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        if (saved === 'dark') {
+          this.isDarkMode = true;
+        } else if (saved === 'light') {
+          this.isDarkMode = false;
+        }
+      }
+    } catch {
+      this.isDarkMode = false;
+    }
+    this.applyThemeToDocument();
+  }
+
+  private applyThemeToDocument(): void {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', this.isDarkMode);
+      document.body.classList.toggle('dark', this.isDarkMode);
+    }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(THEME_STORAGE_KEY, this.isDarkMode ? 'dark' : 'light');
+      }
+    } catch {
+      // Ignora em modo restrito
+    }
   }
 
   private registerServiceWorker(): void {
@@ -156,13 +188,14 @@ class SportinoxCounterCatalogApp {
       `Especificação: Papel ${product.specs.substrate} | ${product.specs.resinFinish} | Cor ${product.specs.color} | Medida ${product.specs.dimensions} (${product.specs.packageQty})`,
     ];
 
+    if (product.storeInventoryData?.shelfLocation) {
+      lines.push(`Localização na Loja: ${product.storeInventoryData.shelfLocation}`);
+    }
+
     if (!this.isClientModeHidePrices) {
       const priceCents = BigInt(product.storeInventoryData?.priceCentsBigInt || '0');
       if (priceCents > 0n) {
         lines.push(`Preço: *${formatCentsBigIntToBrl(priceCents)}*`);
-      }
-      if (product.storeInventoryData?.shelfLocation) {
-        lines.push(`Localização: ${product.storeInventoryData.shelfLocation}`);
       }
     }
 
@@ -173,7 +206,7 @@ class SportinoxCounterCatalogApp {
     const root = document.getElementById('app');
     if (!root) return;
 
-    document.documentElement.classList.toggle('dark', this.isDarkMode);
+    this.applyThemeToDocument();
 
     const productLines = this.getAvailableProductLines();
     const categories = this.getAvailableCategories();
@@ -204,64 +237,64 @@ class SportinoxCounterCatalogApp {
         <!-- Notificação Toast Flutuante -->
         <div
           data-toast-banner
-          class="${this.statusToastMessage ? '' : 'hidden'} fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-blue-700 text-white font-semibold text-xs shadow-xl border border-blue-500"
+          class="${this.statusToastMessage ? '' : 'hidden'} fixed bottom-5 right-5 z-50 px-5 py-3.5 rounded-xl bg-blue-700 text-white font-bold text-sm shadow-xl border border-blue-500"
         >
           ${escapeHtml(this.statusToastMessage)}
         </div>
 
-        <!-- BARRA SUPERIOR DE BALCÃO (HIGH CONTRAST) -->
+        <!-- BARRA SUPERIOR DE BALCÃO (MOBILE-FIRST & ALTO CONTRASTE) -->
         <header class="sticky top-0 z-30 bg-white dark:bg-[#1E293B] border-b border-[#E2E8F0] dark:border-slate-700 shadow-xs">
-          <div class="max-w-[1600px] mx-auto px-4 lg:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="max-w-[1640px] mx-auto px-3 sm:px-5 lg:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <!-- Identidade Visual Sportinox -->
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center font-mono font-extrabold text-lg shadow-xs">
+              <div class="w-11 h-11 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center font-mono font-extrabold text-xl shadow-xs shrink-0">
                 SX
               </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h1 class="text-base lg:text-lg font-extrabold tracking-tight text-[#0F172A] dark:text-white">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h1 class="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-[#0F172A] dark:text-white">
                     SPORTINOX — CATÁLOGO DE BALCÃO
                   </h1>
-                  <span class="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-[#1D4ED8] dark:text-blue-300 font-mono text-[11px] font-bold">
+                  <span class="px-2.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-[#1D4ED8] dark:text-blue-300 text-xs font-extrabold tracking-wide">
                     OFFLINE-FIRST WEBP HD
                   </span>
                 </div>
-                <p class="text-xs text-slate-600 dark:text-slate-300">
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 truncate">
                   Adesivos Resinados, Emblemas, Soleiras, Faixas Decorativas e Películas PPF separados por Linha
                 </p>
               </div>
             </div>
 
-            <!-- Controles Rápidos de Balcão -->
+            <!-- Controles Rápidos de Balcão (Mobile-First Touch Friendly) -->
             <div class="flex flex-wrap items-center gap-2">
               <!-- Indicador de Performance Sub-50ms -->
-              <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>${this.filteredResults.length} itens</span>
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold tabular-specs">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                <span><strong>${this.filteredResults.length}</strong> itens</span>
                 <span class="text-slate-400">|</span>
-                <span class="font-bold text-emerald-700 dark:text-emerald-400">${this.lastSearchDurationMs}ms</span>
+                <span class="font-bold text-emerald-700 dark:text-emerald-400">${this.lastSearchDurationMs} ms</span>
               </div>
 
               <!-- Botão Ocultar / Mostrar Preços (Modo Cliente) -->
               <button
                 type="button"
                 data-toggle-client-mode
-                class="px-3 py-2 rounded-lg border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition ${
+                class="min-h-[40px] px-3.5 py-2 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition ${
                   this.isClientModeHidePrices
-                    ? 'bg-amber-600 border-amber-600 text-white'
+                    ? 'bg-amber-600 border-amber-600 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }"
-                title="Esconde preços e custos da tela para atendimento conjunto com o cliente no balcão"
+                title="Esconde apenas o valor em R$ para atendimento com o cliente, mantendo a Localização/Prateleira visível"
               >
                 ${renderSvgIcon(this.isClientModeHidePrices ? 'eyeOff' : 'eye', 'w-4 h-4')}
-                <span>${this.isClientModeHidePrices ? 'Modo Cliente (Preços Ocultos)' : 'Ocultar Preços (Modo Cliente)'}</span>
+                <span>${this.isClientModeHidePrices ? 'Preços Ocultos (Mostrar R$)' : 'Ocultar Preços (Modo Cliente)'}</span>
               </button>
 
               <!-- Botão Novo Produto Manual -->
               <button
                 type="button"
                 data-btn-new-product
-                class="px-3.5 py-2 rounded-lg bg-[#1D4ED8] hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                class="min-h-[40px] px-4 py-2 rounded-lg bg-[#1D4ED8] hover:bg-blue-800 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 ${renderSvgIcon('plus', 'w-4 h-4')}
                 <span>Novo Produto</span>
@@ -271,7 +304,7 @@ class SportinoxCounterCatalogApp {
               <button
                 type="button"
                 data-toggle-management
-                class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                class="min-h-[40px] px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer"
               >
                 ${renderSvgIcon('database', 'w-4 h-4')}
                 <span>Gestão &amp; Backup</span>
@@ -281,26 +314,27 @@ class SportinoxCounterCatalogApp {
               <button
                 type="button"
                 data-toggle-theme
-                class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 cursor-pointer"
-                title="Alternar Tema Claro Industrial (Daylight) / Modo Escuro Calibrado"
+                class="min-h-[40px] px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-amber-300 text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer"
+                title="Alternar entre Tema Claro Industrial e Modo Escuro Calibrado"
               >
                 ${renderSvgIcon(this.isDarkMode ? 'sun' : 'moon', 'w-4 h-4')}
+                <span>${this.isDarkMode ? 'Modo Claro' : 'Modo Escuro'}</span>
               </button>
             </div>
           </div>
 
-          <!-- BARRA DE NAVEGAÇÃO DIRETA POR MACRO-LINHA (IGUAL AO SITE SPORTINOX) -->
-          <div class="bg-slate-100/90 dark:bg-slate-900/90 border-t border-[#E2E8F0] dark:border-slate-800">
-            <div class="max-w-[1600px] mx-auto px-4 lg:px-6 py-2 flex items-center gap-2 overflow-x-auto">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
-                ${renderSvgIcon('layers', 'w-3.5 h-3.5')}
+          <!-- BARRA DE NAVEGAÇÃO DIRETA POR MACRO-LINHA (SEM BARRA DE ROLAGEM SOBREPOSTA) -->
+          <div class="bg-slate-100/90 dark:bg-slate-900/95 border-t border-[#E2E8F0] dark:border-slate-800">
+            <div class="max-w-[1640px] mx-auto px-3 sm:px-5 lg:px-6 py-2.5 flex flex-wrap items-center gap-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mr-1">
+                ${renderSvgIcon('layers', 'w-4 h-4')}
                 <span>Segmento por Linha:</span>
               </span>
               ${[
                 { id: 'ALL', label: 'Todas as Linhas', icon: 'layers' as const },
                 { id: 'Linha Leve', label: 'Catálogo Linha Leve', icon: 'car' as const },
                 { id: 'Linha Universal', label: 'Catálogo Linha Universal', icon: 'star' as const },
-                { id: 'Linha Pesada', label: 'Catálogo Linha Pesada (Caminhões)', icon: 'truck' as const },
+                { id: 'Linha Pesada', label: 'Linha Pesada (Caminhões)', icon: 'truck' as const },
                 { id: 'Linha Motos', label: 'Catálogo Linha Motos', icon: 'bike' as const },
                 { id: 'Lançamentos', label: 'Lançamentos', icon: 'tag' as const },
               ]
@@ -311,18 +345,18 @@ class SportinoxCounterCatalogApp {
                     <button
                       type="button"
                       data-macro-line="${escapeHtml(tab.id)}"
-                      class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition ${
+                      class="min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition ${
                         active
                           ? 'bg-[#1D4ED8] text-white shadow-xs'
-                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-blue-500'
+                          : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:border-blue-500'
                       }"
                     >
-                      ${renderSvgIcon(tab.icon, 'w-3.5 h-3.5')}
+                      ${renderSvgIcon(tab.icon, 'w-4 h-4')}
                       <span>${escapeHtml(tab.label)}</span>
-                      <span class="px-1.5 py-0.2 rounded text-[10px] font-mono ${
+                      <span class="px-2 py-0.5 rounded-md text-xs font-extrabold tabular-specs ${
                         active
-                          ? 'bg-blue-900/60 text-white'
-                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          ? 'bg-blue-900 text-white'
+                          : 'bg-slate-200/80 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
                       }">${count}</span>
                     </button>
                   `;
@@ -336,21 +370,21 @@ class SportinoxCounterCatalogApp {
         ${this.isManagementPanelOpen ? this.renderManagementDrawerHtml() : ''}
 
         <!-- CONTEÚDO PRINCIPAL: FILTRO RÁPIDO POR LINHA + BUSCA MULTI-TOKEN + GRADE -->
-        <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 lg:px-6 py-5 space-y-5">
+        <main class="flex-1 max-w-[1640px] w-full mx-auto px-3 sm:px-5 lg:px-6 py-5 space-y-5">
           <!-- SEÇÃO DE BUSCA E FILTRO POR LINHA MONTADORA -->
-          <section class="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 lg:p-5 shadow-xs space-y-4">
+          <section class="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
             <!-- Barra de Pesquisa Instantânea Sub-50ms + Seletor Direto de Linha -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
               <div class="lg:col-span-6 relative">
-                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
                   ${renderSvgIcon('search', 'w-5 h-5')}
                 </span>
                 <input
                   type="search"
                   id="catalog-search-input"
                   value="${escapeHtml(this.filters.query)}"
-                  placeholder="Buscar por Código (CAL168, PPF0076, ADS4126), Linha, Veículo (Gol, Hilux, BMW 320, Tiggo) ou Medida..."
-                  class="w-full pl-11 pr-4 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-600 focus:border-[#1D4ED8] focus:outline-none bg-[#F8FAFC] dark:bg-slate-900 text-sm font-medium"
+                  placeholder="Buscar por Código (CAL414, CAL168, PPF0076), Linha, Veículo (Gol, Hilux, Citroen) ou Medida (51 mm)..."
+                  class="w-full min-h-[46px] pl-12 pr-4 py-2.5 rounded-xl border-2 border-slate-300 dark:border-slate-600 focus:border-[#1D4ED8] dark:focus:border-blue-400 focus:outline-none bg-[#F8FAFC] dark:bg-slate-900 text-base font-medium text-[#0F172A] dark:text-white placeholder:text-slate-400"
                 />
               </div>
 
@@ -359,9 +393,9 @@ class SportinoxCounterCatalogApp {
                 <select
                   id="filter-product-line"
                   aria-label="Filtrar por Linha"
-                  class="w-full px-3.5 py-2.5 rounded-xl border-2 border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-slate-900 text-sm font-bold text-[#0F172A] dark:text-white cursor-pointer"
+                  class="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border-2 border-blue-600 dark:border-blue-500 bg-blue-50/60 dark:bg-slate-900 text-sm sm:text-base font-bold text-[#0F172A] dark:text-white cursor-pointer"
                 >
-                  <option value="ALL">Filtrar por Linha: Todas as Linhas (${productLines.length})</option>
+                  <option value="ALL">Filtrar por Linha: Todas (${productLines.length})</option>
                   ${productLines
                     .map(
                       (line) =>
@@ -376,7 +410,7 @@ class SportinoxCounterCatalogApp {
                 <select
                   id="filter-category"
                   aria-label="Filtrar por Categoria"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold cursor-pointer"
+                  class="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm sm:text-base font-semibold text-[#0F172A] dark:text-white cursor-pointer"
                 >
                   <option value="ALL">Todas as Categorias (${categories.length})</option>
                   ${categories
@@ -391,10 +425,10 @@ class SportinoxCounterCatalogApp {
 
             <!-- CHIPS RÁPIDOS DE LINHA (IGUAL AO MENU LATERAL DO INDUSTRIASPORTINOX.COM) -->
             <div class="pt-1">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                  ${renderSvgIcon('filter', 'w-3.5 h-3.5')}
-                  <span>Acesso Rápido por Linha Automotiva (1 Clique):</span>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  ${renderSvgIcon('filter', 'w-4 h-4')}
+                  <span>Filtro Rápido por Linha Automotiva (1 Clique):</span>
                 </span>
                 ${
                   this.hasActiveFilters()
@@ -402,23 +436,23 @@ class SportinoxCounterCatalogApp {
                   <button
                     type="button"
                     data-reset-filters
-                    class="text-xs font-bold text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                    class="px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/70 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 hover:underline flex items-center gap-1.5 cursor-pointer"
                   >
-                    ${renderSvgIcon('refresh', 'w-3.5 h-3.5')}
+                    ${renderSvgIcon('refresh', 'w-4 h-4')}
                     <span>Limpar Todos os Filtros</span>
                   </button>
                 `
                     : ''
                 }
               </div>
-              <div class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+              <div class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1 py-0.5">
                 <button
                   type="button"
                   data-line-chip="ALL"
-                  class="px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition ${
+                  class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold cursor-pointer transition ${
                     this.filters.productLine === 'ALL'
-                      ? 'bg-[#1D4ED8] text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      ? 'bg-[#1D4ED8] text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }"
                 >
                   Todas
@@ -431,10 +465,10 @@ class SportinoxCounterCatalogApp {
                       <button
                         type="button"
                         data-line-chip="${escapeHtml(line)}"
-                        class="px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition ${
+                        class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold cursor-pointer transition ${
                           isSelected
-                            ? 'bg-[#1D4ED8] text-white font-bold shadow-2xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700'
+                            ? 'bg-[#1D4ED8] text-white font-bold shadow-xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                         }"
                       >
                         Linha ${escapeHtml(shortLabel)}
@@ -445,11 +479,11 @@ class SportinoxCounterCatalogApp {
               </div>
             </div>
 
-            <!-- Filtros Técnicos Combinados de Balcão -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <!-- Filtros Técnicos Combinados de Balcão (Mobile-First Grid) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Montadora</label>
-                <select id="filter-automaker" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-semibold">
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Montadora</label>
+                <select id="filter-automaker" class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-[#0F172A] dark:text-white">
                   <option value="ALL">Todas (${automakers.length})</option>
                   ${automakers
                     .map(
@@ -461,18 +495,18 @@ class SportinoxCounterCatalogApp {
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Modelo do Veículo</label>
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Modelo do Veículo</label>
                 <input
                   type="text"
                   id="filter-model"
                   value="${escapeHtml(this.filters.model)}"
                   placeholder="Ex: Gol, S10, Ranger..."
-                  class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs"
+                  class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium text-[#0F172A] dark:text-white"
                 />
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Ano do Veículo</label>
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Ano do Veículo</label>
                 <input
                   type="number"
                   id="filter-year"
@@ -480,13 +514,13 @@ class SportinoxCounterCatalogApp {
                   placeholder="Ex: 2025, 2014"
                   min="1950"
                   max="2035"
-                  class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 font-mono text-xs"
+                  class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold tabular-specs text-[#0F172A] dark:text-white"
                 />
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Acabamento</label>
-                <select id="filter-resin" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-semibold">
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Acabamento</label>
+                <select id="filter-resin" class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-[#0F172A] dark:text-white">
                   <option value="ALL" ${this.filters.resinFinish === 'ALL' ? 'selected' : ''}>Todos (Resinado + Sem Resina)</option>
                   <option value="Resinado" ${this.filters.resinFinish === 'Resinado' ? 'selected' : ''}>Resinado PU</option>
                   <option value="Sem Resina" ${this.filters.resinFinish === 'Sem Resina' ? 'selected' : ''}>Sem Resina / PPF</option>
@@ -494,8 +528,8 @@ class SportinoxCounterCatalogApp {
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Papel / Material</label>
-                <select id="filter-substrate" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-semibold">
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Papel / Material</label>
+                <select id="filter-substrate" class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-[#0F172A] dark:text-white">
                   <option value="ALL">Todos (${substrates.length})</option>
                   ${substrates
                     .map(
@@ -507,8 +541,8 @@ class SportinoxCounterCatalogApp {
               </div>
 
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Status Loja / Lixeira</label>
-                <select id="filter-price-status" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs font-semibold">
+                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1">Status Loja / Lixeira</label>
+                <select id="filter-price-status" class="w-full min-h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-[#0F172A] dark:text-white">
                   <option value="ALL" ${!this.filters.includeTrash && this.filters.priceStatus === 'ALL' ? 'selected' : ''}>Catálogo Ativo Completo</option>
                   <option value="WITH_PRICE" ${this.filters.priceStatus === 'WITH_PRICE' ? 'selected' : ''}>Com Preço Cadastrado</option>
                   <option value="IN_STOCK" ${this.filters.priceStatus === 'IN_STOCK' ? 'selected' : ''}>Em Estoque (&gt; 0)</option>
@@ -551,18 +585,18 @@ class SportinoxCounterCatalogApp {
   private renderProductGridHtml(): string {
     if (this.filteredResults.length === 0) {
       return `
-        <div class="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-12 text-center space-y-3">
-          <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
-            ${renderSvgIcon('search', 'w-6 h-6')}
+        <div class="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-slate-700 rounded-2xl p-12 text-center space-y-4">
+          <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 mx-auto flex items-center justify-center">
+            ${renderSvgIcon('search', 'w-7 h-7')}
           </div>
-          <h3 class="text-base font-bold">Nenhuma peça encontrada para os filtros selecionados</h3>
-          <p class="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-            Tente limpar o filtro de Linha ou pesquisar por parte do código comercial (ex.: CAL, PPF, ADS, PROT) ou modelo do veículo.
+          <h3 class="text-lg font-bold">Nenhuma peça encontrada para os filtros selecionados</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+            Tente limpar o filtro de Linha ou pesquisar por parte do código comercial (ex.: CAL414, CAL168, PPF, ADS, PROT) ou modelo do veículo.
           </p>
           <button
             type="button"
             data-reset-filters
-            class="px-4 py-2 rounded-lg bg-[#1D4ED8] text-white text-xs font-bold cursor-pointer"
+            class="px-5 py-2.5 rounded-xl bg-[#1D4ED8] text-white text-sm font-bold cursor-pointer"
           >
             Mostrar Todo o Catálogo (${this.allProducts.length} peças)
           </button>
@@ -584,7 +618,7 @@ class SportinoxCounterCatalogApp {
           <button
             type="button"
             data-load-more
-            class="px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border-2 border-[#1D4ED8] text-[#1D4ED8] dark:text-blue-400 font-bold text-xs cursor-pointer shadow-xs"
+            class="min-h-[44px] px-6 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border-2 border-[#1D4ED8] text-[#1D4ED8] dark:text-blue-400 font-bold text-sm cursor-pointer shadow-xs"
           >
             Carregar Mais Peças (Exibindo ${visibleItems.length} de ${this.filteredResults.length})
           </button>
@@ -611,6 +645,10 @@ class SportinoxCounterCatalogApp {
       priceCents = 0n;
     }
 
+    const shelfLocation = (p.storeInventoryData?.shelfLocation || '').trim();
+    const internalStoreCode = (p.storeInventoryData?.internalStoreCode || '').trim();
+    const stockQty = p.storeInventoryData?.stockQty ?? 0;
+
     const app = p.vehicleApplications[0] || {
       automaker: p.automaker,
       model: 'Todos os Veículos',
@@ -626,7 +664,7 @@ class SportinoxCounterCatalogApp {
           ? `${app.yearStart}`
           : `${app.yearStart}/${app.yearEnd}`
         : app.yearStart && app.isOngoing
-          ? `${app.yearStart}/...`
+          ? `${app.yearStart} em diante`
           : app.yearEnd
             ? `até ${app.yearEnd}`
             : '';
@@ -634,24 +672,24 @@ class SportinoxCounterCatalogApp {
     return `
       <article
         data-product-card="${escapeHtml(p.id)}"
-        class="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-slate-700 rounded-2xl shadow-xs hover:shadow-md transition flex flex-col overflow-hidden"
+        class="bg-white dark:bg-[#1E293B] border-2 border-[#E2E8F0] dark:border-slate-700 rounded-2xl shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition flex flex-col overflow-hidden"
       >
-        <!-- Topo do Card: Código SKU Monospace (Escaneável a 1 Metro) + Linha -->
-        <div class="px-4 py-3 bg-slate-50/90 dark:bg-slate-800/70 border-b border-[#E2E8F0] dark:border-slate-700 flex items-center justify-between gap-2">
+        <!-- Topo do Card: Código SKU Monospace Grande (24px Escaneável a 1 Metro) + Linha -->
+        <div class="px-4 py-3.5 bg-slate-50 dark:bg-slate-800/90 border-b border-[#E2E8F0] dark:border-slate-700 flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <span class="font-mono text-xl font-extrabold tracking-tight text-[#1D4ED8] dark:text-blue-400">
+            <span class="font-mono text-2xl font-extrabold tracking-wider text-[#1D4ED8] dark:text-blue-400">
               ${escapeHtml(p.commercialCodeRaw)}
             </span>
             ${
               item.isHomoglyphMatch
-                ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-mono text-[10px] font-bold" title="Busca aproximada O↔0 / I↔1">Aprox. Homóglifo</span>`
+                ? `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-bold" title="Busca aproximada O↔0 / I↔1">Aprox.</span>`
                 : ''
             }
           </div>
           <button
             type="button"
             data-filter-by-line="${escapeHtml(p.productLine)}"
-            class="px-2.5 py-1 rounded-md bg-blue-100/80 dark:bg-blue-950/80 hover:bg-blue-200 text-[#1D4ED8] dark:text-blue-300 text-[11px] font-bold truncate max-w-[165px] cursor-pointer"
+            class="px-3 py-1 rounded-lg bg-blue-100 dark:bg-blue-950 hover:bg-blue-200 dark:hover:bg-blue-900 text-[#1D4ED8] dark:text-blue-300 text-xs sm:text-sm font-bold truncate max-w-[180px] cursor-pointer"
             title="Filtrar por ${escapeHtml(p.productLine)}"
           >
             ${escapeHtml(p.productLine)}
@@ -659,7 +697,7 @@ class SportinoxCounterCatalogApp {
         </div>
 
         <!-- Galeria de Imagem .WebP Fundo Branco Puro (#FFFFFF) + Carrossel Multi-Ângulos -->
-        <div class="relative bg-white p-4 h-44 flex items-center justify-center border-b border-slate-100 group">
+        <div class="relative bg-white p-4 h-48 flex items-center justify-center border-b border-slate-200 dark:border-slate-700 group">
           ${
             currentImg
               ? `
@@ -669,11 +707,11 @@ class SportinoxCounterCatalogApp {
               loading="lazy"
               data-open-lightbox="${escapeHtml(p.id)}"
               data-angle-index="${activeIdx}"
-              class="max-h-36 max-w-full object-contain cursor-zoom-in transition-transform duration-150 group-hover:scale-105"
+              class="max-h-40 max-w-full object-contain cursor-zoom-in transition-transform duration-150 group-hover:scale-105"
             />
           `
               : `
-            <div class="text-xs text-slate-400 flex flex-col items-center gap-1">
+            <div class="text-sm text-slate-400 flex flex-col items-center gap-1">
               ${renderSvgIcon('image', 'w-8 h-8')}
               <span>Sem Foto</span>
             </div>
@@ -681,7 +719,7 @@ class SportinoxCounterCatalogApp {
           }
 
           <!-- Badge de Acabamento (Resinado vs Sem Resina / PPF) -->
-          <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+          <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider shadow-2xs ${
             p.specs.resinFinish === 'Resinado'
               ? 'bg-emerald-700 text-white'
               : 'bg-slate-800 text-white'
@@ -694,7 +732,7 @@ class SportinoxCounterCatalogApp {
             type="button"
             data-open-lightbox="${escapeHtml(p.id)}"
             data-angle-index="${activeIdx}"
-            class="absolute top-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/75 hover:bg-[#1D4ED8] text-white opacity-85 group-hover:opacity-100 cursor-pointer transition"
+            class="absolute top-3 right-3 p-2 rounded-lg bg-slate-900/80 hover:bg-[#1D4ED8] text-white cursor-pointer transition"
             title="Abrir Zoom 400% HD"
           >
             ${renderSvgIcon('maximize', 'w-4 h-4')}
@@ -706,7 +744,7 @@ class SportinoxCounterCatalogApp {
             <button
               type="button"
               data-card-angle-prev="${escapeHtml(p.id)}"
-              class="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-slate-900/75 hover:bg-[#1D4ED8] text-white cursor-pointer"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-900/80 hover:bg-[#1D4ED8] text-white cursor-pointer"
               title="Ângulo anterior"
             >
               ${renderSvgIcon('chevronLeft', 'w-4 h-4')}
@@ -714,12 +752,12 @@ class SportinoxCounterCatalogApp {
             <button
               type="button"
               data-card-angle-next="${escapeHtml(p.id)}"
-              class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-slate-900/75 hover:bg-[#1D4ED8] text-white cursor-pointer"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-900/80 hover:bg-[#1D4ED8] text-white cursor-pointer"
               title="Próximo ângulo"
             >
               ${renderSvgIcon('chevronRight', 'w-4 h-4')}
             </button>
-            <span class="absolute bottom-2 right-2.5 px-2 py-0.5 rounded-full bg-blue-700 text-white font-mono text-[10px] font-bold">
+            <span class="absolute bottom-2.5 right-3 px-2.5 py-1 rounded-full bg-blue-700 text-white text-xs font-bold tabular-specs">
               Ângulo ${activeIdx + 1}/${gallery.length} HD
             </span>
           `
@@ -727,116 +765,142 @@ class SportinoxCounterCatalogApp {
           }
         </div>
 
-        <!-- Corpo Técnico do Card -->
-        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between gap-1">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+        <!-- Corpo Técnico do Card com Fontes Ampliadas e Nítidas -->
+        <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-400">
                 ${escapeHtml(p.category)}
               </span>
-              <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+              <span class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
                 ${escapeHtml(p.macroLine)}
               </span>
             </div>
 
-            <h2 class="text-sm font-bold text-[#0F172A] dark:text-white leading-snug">
+            <h2 class="text-base sm:text-lg font-extrabold text-[#0F172A] dark:text-white leading-snug">
               ${escapeHtml(p.name)}
             </h2>
 
-            <!-- Aplicação Veicular -->
-            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 text-xs space-y-1">
-              <div class="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
-                <span class="flex items-center gap-1">
-                  ${renderSvgIcon('car', 'w-3.5 h-3.5')}
+            <!-- Aplicação Veicular (Legibilidade Ampliada) -->
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1.5">
+              <div class="flex flex-wrap items-center justify-between gap-1 font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                <span class="flex items-center gap-1.5">
+                  ${renderSvgIcon('car', 'w-4 h-4 text-blue-700 dark:text-blue-400')}
                   <span>${escapeHtml(app.automaker)}</span>
                 </span>
                 ${
                   yearBadge
-                    ? `<span class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">${escapeHtml(yearBadge)}</span>`
+                    ? `<span class="px-2.5 py-0.5 rounded-md bg-blue-100 dark:bg-slate-700 text-blue-900 dark:text-blue-200 tabular-specs text-xs sm:text-sm font-bold">${escapeHtml(yearBadge)}</span>`
                     : ''
                 }
               </div>
-              <p class="text-slate-600 dark:text-slate-300 text-xs truncate" title="${escapeHtml(app.model)}">
+              <p class="text-slate-700 dark:text-slate-200 text-sm font-medium leading-snug" title="${escapeHtml(app.model)}">
                 ${escapeHtml(app.model)}
               </p>
             </div>
 
-            <!-- Especificações Técnicas (Papel, Cor, Medidas, Embalagem) -->
-            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-              <div class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">
-                <span class="text-slate-500 dark:text-slate-400">Papel:</span>
-                <strong class="text-slate-800 dark:text-slate-200"> ${escapeHtml(p.specs.substrate)}</strong>
+            <!-- Especificações Técnicas (Papel, Cor, Medida ex: "51 mm" NÍTIDO, Embalagem) -->
+            <div class="grid grid-cols-2 gap-2 text-sm tabular-specs">
+              <div class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700">
+                <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Papel / Material</span>
+                <strong class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">${escapeHtml(p.specs.substrate)}</strong>
               </div>
-              <div class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">
-                <span class="text-slate-500 dark:text-slate-400">Cor:</span>
-                <strong class="text-slate-800 dark:text-slate-200"> ${escapeHtml(p.specs.color)}</strong>
+              <div class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700">
+                <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Cor</span>
+                <strong class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">${escapeHtml(p.specs.color)}</strong>
               </div>
-              <div class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 font-mono">
-                <span class="text-slate-500 dark:text-slate-400">Medida:</span>
-                <strong class="text-slate-900 dark:text-white"> ${escapeHtml(p.specs.dimensions)}</strong>
+              <div class="px-3 py-2 rounded-lg bg-blue-50/70 dark:bg-slate-800 border border-blue-200/80 dark:border-slate-600">
+                <span class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Medida Exata</span>
+                <strong class="text-base font-extrabold tracking-wide text-[#0F172A] dark:text-white">${escapeHtml(p.specs.dimensions)}</strong>
               </div>
-              <div class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">
-                <span class="text-slate-500 dark:text-slate-400">Emb.:</span>
-                <strong class="text-slate-800 dark:text-slate-200"> ${escapeHtml(p.specs.packageQty)}</strong>
+              <div class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700">
+                <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Embalagem</span>
+                <strong class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">${escapeHtml(p.specs.packageQty)}</strong>
               </div>
             </div>
           </div>
 
-          <!-- Preço / Estoque da Loja (Oculto automaticamente quando Modo Cliente está ativo) -->
-          <div class="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2.5">
+          <!-- FAIXA DE LOCALIZAÇÃO NA LOJA (SEMPRE VISÍVEL) + PREÇO (RESPEITA MODO CLIENTE) -->
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
+            <!-- Localização / Prateleira e Estoque SEMPRE Visíveis no Balcão -->
+            <div class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                data-edit-product="${escapeHtml(p.id)}"
+                class="text-left flex items-center gap-1.5 text-xs sm:text-sm font-bold cursor-pointer ${
+                  shelfLocation
+                    ? 'text-blue-800 dark:text-blue-300'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400'
+                }"
+                title="Clique para definir ou alterar a Prateleira / Gaveta / Localização desta peça na loja"
+              >
+                ${renderSvgIcon('package', 'w-4 h-4 shrink-0')}
+                <span>
+                  Local: <strong>${shelfLocation ? escapeHtml(shelfLocation) : 'Definir Prateleira'}</strong>
+                </span>
+              </button>
+
+              <div class="flex items-center gap-2 text-xs sm:text-sm tabular-specs">
+                ${
+                  internalStoreCode
+                    ? `<span class="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 font-mono font-bold">${escapeHtml(internalStoreCode)}</span>`
+                    : ''
+                }
+                <span class="px-2 py-0.5 rounded ${
+                  stockQty > 0
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold'
+                }">
+                  Estoque: <strong>${stockQty}</strong>
+                </span>
+              </div>
+            </div>
+
+            <!-- Linha de Preço Financeiro (Ocultada apenas quando o Modo Cliente está ativo) -->
             ${
               !this.isClientModeHidePrices
                 ? `
-              <div class="flex items-center justify-between text-xs">
-                <div>
-                  ${
-                    priceCents > 0n
-                      ? `<span class="font-mono text-base font-extrabold text-emerald-700 dark:text-emerald-400">${escapeHtml(formatCentsBigIntToBrl(priceCents))}</span>`
-                      : `<span class="text-slate-400 italic">Preço sob consulta</span>`
-                  }
-                </div>
-                <div class="flex items-center gap-2 font-mono text-[11px] text-slate-600 dark:text-slate-300">
-                  ${
-                    p.storeInventoryData?.shelfLocation
-                      ? `<span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">Local: ${escapeHtml(p.storeInventoryData.shelfLocation)}</span>`
-                      : ''
-                  }
-                  <span>Est: <strong>${p.storeInventoryData?.stockQty ?? 0}</strong></span>
-                </div>
+              <div class="flex items-center justify-between px-1">
+                <span class="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">Preço Balcão:</span>
+                ${
+                  priceCents > 0n
+                    ? `<span class="tabular-specs text-lg sm:text-xl font-extrabold text-emerald-700 dark:text-emerald-400">${escapeHtml(formatCentsBigIntToBrl(priceCents))}</span>`
+                    : `<button type="button" data-edit-product="${escapeHtml(p.id)}" class="text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-400 hover:underline cursor-pointer">+ Informar Preço R$</button>`
+                }
               </div>
             `
                 : ''
             }
 
-            <!-- Ações Rápidas do Card: Vínculos, WhatsApp e Editar -->
-            <div class="grid grid-cols-3 gap-1.5">
+            <!-- Ações Rápidas do Card (Touch-Friendly Mobile First >= 42px) -->
+            <div class="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 data-open-relations="${escapeHtml(p.id)}"
-                class="px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer"
+                class="min-h-[42px] px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer"
                 title="Ver Variantes, Kits e Peças Complementares do Veículo"
               >
-                ${renderSvgIcon('link', 'w-3.5 h-3.5')}
+                ${renderSvgIcon('link', 'w-4 h-4 shrink-0')}
                 <span>Vínculos (${(p.relations || []).length})</span>
               </button>
 
               <button
                 type="button"
                 data-copy-whatsapp="${escapeHtml(p.id)}"
-                class="px-2 py-1.5 rounded-lg border border-emerald-600/40 bg-emerald-50/70 dark:bg-emerald-950/40 hover:bg-emerald-600 hover:text-white text-emerald-800 dark:text-emerald-300 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition"
+                class="min-h-[42px] px-2.5 py-2 rounded-xl border border-emerald-600/50 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-600 hover:text-white text-emerald-900 dark:text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
                 title="Copiar ficha técnica formatada para WhatsApp"
               >
-                ${renderSvgIcon('shareWhatsApp', 'w-3.5 h-3.5')}
+                ${renderSvgIcon('shareWhatsApp', 'w-4 h-4 shrink-0')}
                 <span>WhatsApp</span>
               </button>
 
               <button
                 type="button"
                 data-edit-product="${escapeHtml(p.id)}"
-                class="px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-[#1D4ED8] hover:text-white text-slate-800 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition"
-                title="Editar Produto, Preço, Prateleira ou Colar Fotos WebP"
+                class="min-h-[42px] px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#1D4ED8] hover:text-white text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
+                title="Editar Produto, Preço, Localização/Prateleira ou Colar Fotos WebP"
               >
-                ${renderSvgIcon('edit', 'w-3.5 h-3.5')}
+                ${renderSvgIcon('edit', 'w-4 h-4 shrink-0')}
                 <span>Editar</span>
               </button>
             </div>
@@ -884,14 +948,14 @@ class SportinoxCounterCatalogApp {
       <section class="bg-white dark:bg-[#1E293B] border-2 border-[#1D4ED8] rounded-2xl p-5 shadow-lg space-y-4">
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
           <div class="flex items-center gap-3">
-            <span class="px-3 py-1 rounded-lg bg-[#1D4ED8] text-white font-mono font-extrabold text-sm">
+            <span class="px-3.5 py-1.5 rounded-lg bg-[#1D4ED8] text-white font-mono font-extrabold text-base">
               ${escapeHtml(source.commercialCodeRaw)}
             </span>
             <div>
-              <h3 class="text-sm font-extrabold">
+              <h3 class="text-base font-extrabold">
                 Painel das 4 Naturezas de Vínculos Técnicos — ${escapeHtml(source.name)}
               </h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400">
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 Clique em qualquer peça vinculada para localizá-la imediatamente no balcão.
               </p>
             </div>
@@ -899,7 +963,7 @@ class SportinoxCounterCatalogApp {
           <button
             type="button"
             data-close-relations
-            class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-red-600 hover:text-white cursor-pointer"
+            class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-red-600 hover:text-white cursor-pointer"
           >
             ${renderSvgIcon('x', 'w-5 h-5')}
           </button>
@@ -909,37 +973,37 @@ class SportinoxCounterCatalogApp {
           ${sections
             .map(
               (sec) => `
-            <div class="p-3.5 rounded-xl border ${sec.borderClass} bg-slate-50/60 dark:bg-slate-900/50 space-y-2.5">
+            <div class="p-4 rounded-xl border ${sec.borderClass} bg-slate-50/60 dark:bg-slate-900/50 space-y-3">
               <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${sec.badgeClass}">
+                <span class="px-2.5 py-1 rounded text-xs font-bold uppercase ${sec.badgeClass}">
                   ${escapeHtml(sec.key.replace(/_/g, ' '))}
                 </span>
-                <span class="font-mono text-xs font-bold">${sec.items.length}</span>
+                <span class="tabular-specs text-sm font-extrabold">${sec.items.length}</span>
               </div>
-              <p class="text-xs font-bold text-slate-700 dark:text-slate-200">${escapeHtml(sec.title)}</p>
-              <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <p class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">${escapeHtml(sec.title)}</p>
+              <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
                 ${
                   sec.items.length === 0
-                    ? `<p class="text-xs text-slate-400 italic">Nenhum vínculo registrado nesta natureza.</p>`
+                    ? `<p class="text-xs sm:text-sm text-slate-400 italic">Nenhum vínculo registrado nesta natureza.</p>`
                     : sec.items
                         .map(
                           (rel) => `
                         <button
                           type="button"
                           data-jump-to-sku="${escapeHtml(rel.targetProduct.commercialCodeRaw)}"
-                          class="w-full text-left p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-600 flex items-center justify-between gap-2 cursor-pointer"
+                          class="w-full text-left p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-600 flex items-center justify-between gap-2 cursor-pointer"
                         >
-                          <div class="min-w-0">
-                            <div class="font-mono text-xs font-extrabold text-[#1D4ED8] dark:text-blue-400">
+                          <div class="min-w-0 space-y-0.5">
+                            <div class="font-mono text-sm font-extrabold text-[#1D4ED8] dark:text-blue-400">
                               ${escapeHtml(rel.targetProduct.commercialCodeRaw)}
                               ${
                                 rel.isTransitiveSuggestion
-                                  ? `<span class="ml-1 px-1 py-0.2 rounded bg-amber-100 text-amber-900 text-[9px]">Transitiva</span>`
+                                  ? `<span class="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px]">Transitiva</span>`
                                   : ''
                               }
                             </div>
-                            <div class="text-[11px] font-semibold truncate">${escapeHtml(rel.targetProduct.name)}</div>
-                            <div class="text-[10px] text-slate-500 truncate">${escapeHtml(rel.note)}</div>
+                            <div class="text-xs sm:text-sm font-bold truncate">${escapeHtml(rel.targetProduct.name)}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 truncate">${escapeHtml(rel.note)}</div>
                           </div>
                           ${renderSvgIcon('chevronRight', 'w-4 h-4 shrink-0')}
                         </button>
@@ -960,14 +1024,14 @@ class SportinoxCounterCatalogApp {
   private renderManagementDrawerHtml(): string {
     return `
       <div class="bg-slate-900 text-slate-100 border-b border-slate-700">
-        <div class="max-w-[1600px] mx-auto px-4 lg:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="max-w-[1640px] mx-auto px-4 lg:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div class="space-y-1">
-            <div class="flex items-center gap-2 text-sm font-bold text-white">
-              ${renderSvgIcon('shieldCheck', 'w-4 h-4 text-emerald-400')}
+            <div class="flex items-center gap-2 text-sm sm:text-base font-bold text-white">
+              ${renderSvgIcon('shieldCheck', 'w-5 h-5 text-emerald-400')}
               <span>Central de Segurança, Backup SHA-256 e Estoque CSV</span>
             </div>
-            <p class="text-xs text-slate-300">
-              Exporte ou restaure backups completos com validação de integridade SHA-256 ou atualize preços em lote via CSV.
+            <p class="text-xs sm:text-sm text-slate-300">
+              Exporte ou restaure backups completos com validação de integridade SHA-256 ou atualize preços e prateleiras em lote via CSV.
             </p>
           </div>
 
@@ -975,13 +1039,13 @@ class SportinoxCounterCatalogApp {
             <button
               type="button"
               data-btn-export-backup
-              class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              class="min-h-[40px] px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer"
             >
               ${renderSvgIcon('download', 'w-4 h-4')}
               <span>Exportar Backup (.JSON + SHA-256)</span>
             </button>
 
-            <label class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+            <label class="min-h-[40px] px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer">
               ${renderSvgIcon('upload', 'w-4 h-4')}
               <span>Restaurar Backup (.JSON)</span>
               <input type="file" data-input-restore-backup accept=".json,application/json" class="hidden" />
@@ -990,15 +1054,15 @@ class SportinoxCounterCatalogApp {
             <button
               type="button"
               data-btn-export-csv
-              class="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              class="min-h-[40px] px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer"
             >
               ${renderSvgIcon('download', 'w-4 h-4')}
-              <span>Exportar Preços (.CSV)</span>
+              <span>Exportar Preços/Locais (.CSV)</span>
             </button>
 
-            <label class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+            <label class="min-h-[40px] px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer">
               ${renderSvgIcon('upload', 'w-4 h-4')}
-              <span>Importar Preços (.CSV)</span>
+              <span>Importar Preços/Locais (.CSV)</span>
               <input type="file" data-input-import-csv accept=".csv,text/csv" class="hidden" />
             </label>
           </div>
@@ -1131,6 +1195,7 @@ class SportinoxCounterCatalogApp {
     // 5. Controles da Barra Superior
     document.querySelector('[data-toggle-theme]')?.addEventListener('click', () => {
       this.isDarkMode = !this.isDarkMode;
+      this.applyThemeToDocument();
       this.renderAppShell();
     });
 
@@ -1201,7 +1266,7 @@ class SportinoxCounterCatalogApp {
       a.download = `sportinox-estoque-precos-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      this.showToast('Planilha CSV de preços e estoque exportada.');
+      this.showToast('Planilha CSV de preços e localização exportada.');
     });
 
     const csvInput = document.querySelector<HTMLInputElement>('[data-input-import-csv]');
