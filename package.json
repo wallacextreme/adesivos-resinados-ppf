@@ -7,11 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:pwa": "bun run build",
     "preview": "vite preview",
     "test": "bun test",
     "extract:pdf": "python scripts/extract_catalogs_xref.py",
     "enrich:web": "python scripts/enrich_catalog_playwright.py",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:tauri": "bunx tauri build",
+    "build:windows": "bun run build && bunx tauri build",
+    "build:installer:exe": "bun run build && bunx tauri build --bundles nsis",
+    "build:installer:msi": "bun run build && bunx tauri build --bundles msi"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.2.0"

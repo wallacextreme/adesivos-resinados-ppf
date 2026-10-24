@@ -3,13 +3,13 @@
  * Service Worker Offline-First (Cache-First para Imagens .WebP e Assets Estáticos + Stale-While-Revalidate).
  */
 
-const CACHE_NAME = 'sportinox-catalogo-webp-v4';
+const CACHE_NAME = 'sportinox-catalogo-webp-v5';
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -41,10 +41,12 @@ self.addEventListener('fetch', (event) => {
 
   // Estratégia Cache-First para fotos de catálogo .webp e assets compilados
   if (
-    url.pathname.startsWith('/catalog-images/') ||
-    url.pathname.startsWith('/assets/') ||
+    url.pathname.includes('/catalog-images/') ||
+    url.pathname.includes('/assets/') ||
     url.pathname.endsWith('.webp') ||
-    url.pathname.endsWith('.png')
+    url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css')
   ) {
     event.respondWith(
       caches.match(req).then((cachedResponse) => {
