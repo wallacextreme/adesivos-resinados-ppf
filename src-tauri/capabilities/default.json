@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default desktop capabilities for Sportinox Counter Catalog",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}

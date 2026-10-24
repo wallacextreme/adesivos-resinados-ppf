@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "elapsedSeconds": 11.07,
+  "totalPagesProcessed": 161,
+  "totalBlocksParsed": 3199,
+  "uniqueProductsExtracted": 3199,
+  "blacklistedNoiseXrefs": 0,
+  "totalWebpImagesGenerated": 3199,
+  "pixelAuditPassed": 3199,
+  "pixelAuditFailed": 0,
+  "blackBackgroundCount": 0,
+  "extractedDomains": [
+    "https://sportinox.com.br",
+    "http://www.industriasportinox.com/index.html"
+  ]
+}
