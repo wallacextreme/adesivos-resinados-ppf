@@ -61,7 +61,10 @@ class SportinoxCounterCatalogApp {
   private selectedRelationsProduct: CatalogProduct | null = null;
   // Modal de Gestão / Auditoria aberto
   private isManagementPanelOpen = false;
+  // Menu de Chips por Montadora recolhido/expandido (padrão recolhido para despoluir a visualização de balcão)
+  private isLineChipsExpanded = false;
   private statusToastMessage = '';
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   public async bootstrap(): Promise<void> {
     this.loadSavedThemePreference();
@@ -129,15 +132,27 @@ class SportinoxCounterCatalogApp {
   }
 
   private showToast(msg: string): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
     this.statusToastMessage = msg;
     const toastEl = document.querySelector<HTMLElement>('[data-toast-banner]');
+    const toastText = document.querySelector<HTMLElement>('[data-toast-text]');
     if (toastEl) {
-      toastEl.textContent = msg;
+      if (toastText) {
+        toastText.textContent = msg;
+      }
       toastEl.classList.remove('hidden');
-      setTimeout(() => {
-        toastEl.classList.add('hidden');
-      }, 3200);
     }
+    this.toastTimer = setTimeout(() => {
+      this.statusToastMessage = '';
+      const el = document.querySelector<HTMLElement>('[data-toast-banner]');
+      if (el) {
+        el.classList.add('hidden');
+      }
+      this.toastTimer = null;
+    }, 3200);
   }
 
   private getAvailableProductLines(): string[] {
@@ -234,12 +249,24 @@ class SportinoxCounterCatalogApp {
 
     root.innerHTML = `
       <div class="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-[#F8FAFC] transition-colors duration-150">
-        <!-- Notificação Toast Flutuante -->
+        <!-- Notificação Toast Flutuante com Fechamento e Auto-Dismiss -->
         <div
           data-toast-banner
-          class="${this.statusToastMessage ? '' : 'hidden'} fixed bottom-5 right-5 z-50 px-5 py-3.5 rounded-xl bg-blue-700 text-white font-bold text-sm shadow-xl border border-blue-500"
+          class="${this.statusToastMessage ? '' : 'hidden'} fixed bottom-5 right-5 z-50 max-w-md px-4 py-3 rounded-xl bg-[#1D4ED8] text-white font-bold text-sm shadow-2xl border border-blue-400 flex items-center justify-between gap-3 transition"
+          role="status"
         >
-          ${escapeHtml(this.statusToastMessage)}
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+            <span data-toast-text class="truncate">${escapeHtml(this.statusToastMessage)}</span>
+          </div>
+          <button
+            type="button"
+            data-close-toast
+            class="p-1 rounded-lg hover:bg-blue-800 text-blue-200 hover:text-white cursor-pointer transition shrink-0"
+            title="Fechar notificação"
+          >
+            ${renderSvgIcon('x', 'w-4 h-4')}
+          </button>
         </div>
 
         <!-- BARRA SUPERIOR DE BALCÃO (MOBILE-FIRST & ALTO CONTRASTE) -->
@@ -423,60 +450,111 @@ class SportinoxCounterCatalogApp {
               </div>
             </div>
 
-            <!-- CHIPS RÁPIDOS DE LINHA (IGUAL AO MENU LATERAL DO INDUSTRIASPORTINOX.COM) -->
-            <div class="pt-1">
-              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  ${renderSvgIcon('filter', 'w-4 h-4')}
-                  <span>Filtro Rápido por Linha Automotiva (1 Clique):</span>
-                </span>
-                ${
-                  this.hasActiveFilters()
-                    ? `
+            <!-- MENU RECOLHÍVEL DE LINHAS AUTOMOTIVAS (DESPOLUIÇÃO VISUAL DE BALCÃO DESKTOP & MOBILE) -->
+            <div class="pt-2 border-t border-slate-200/80 dark:border-slate-800">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    data-reset-filters
-                    class="px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/70 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 hover:underline flex items-center gap-1.5 cursor-pointer"
+                    data-toggle-line-chips
+                    class="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition shadow-2xs"
+                    title="${this.isLineChipsExpanded ? 'Clique para recolher o menu de linhas' : 'Clique para expandir a lista de montadoras'}"
                   >
-                    ${renderSvgIcon('refresh', 'w-4 h-4')}
-                    <span>Limpar Todos os Filtros</span>
+                    ${renderSvgIcon(this.isLineChipsExpanded ? 'chevronUp' : 'chevronDown', 'w-4 h-4 text-blue-600 dark:text-blue-400')}
+                    <span>${this.isLineChipsExpanded ? 'Recolher Linhas' : 'Filtro Rápido por Montadora'}</span>
+                    <span class="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-xs font-extrabold tabular-specs">
+                      ${productLines.length}
+                    </span>
                   </button>
-                `
-                    : ''
-                }
-              </div>
-              <div class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1 py-0.5">
-                <button
-                  type="button"
-                  data-line-chip="ALL"
-                  class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold cursor-pointer transition ${
-                    this.filters.productLine === 'ALL'
-                      ? 'bg-[#1D4ED8] text-white shadow-xs'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }"
-                >
-                  Todas
-                </button>
-                ${productLines
-                  .map((line) => {
-                    const isSelected = this.filters.productLine === line;
-                    const shortLabel = line.replace(/^Linha\s+/i, '');
-                    return `
+
+                  ${
+                    this.filters.productLine !== 'ALL'
+                      ? `
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-300 dark:border-blue-700 text-xs sm:text-sm font-bold text-blue-900 dark:text-blue-200">
+                      <span>Filtro Ativo: <strong>${escapeHtml(this.filters.productLine)}</strong></span>
                       <button
                         type="button"
-                        data-line-chip="${escapeHtml(line)}"
-                        class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold cursor-pointer transition ${
-                          isSelected
-                            ? 'bg-[#1D4ED8] text-white font-bold shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
-                        }"
+                        data-line-chip="ALL"
+                        class="p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800 rounded text-blue-700 dark:text-blue-300 cursor-pointer transition"
+                        title="Remover filtro de linha e mostrar todas"
                       >
-                        Linha ${escapeHtml(shortLabel)}
+                        ${renderSvgIcon('x', 'w-3.5 h-3.5')}
                       </button>
-                    `;
-                  })
-                  .join('')}
+                    </div>
+                  `
+                      : ''
+                  }
+                </div>
+
+                <div class="flex items-center gap-2">
+                  ${
+                    this.hasActiveFilters()
+                      ? `
+                    <button
+                      type="button"
+                      data-reset-filters
+                      class="min-h-[36px] px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/70 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 hover:underline flex items-center gap-1.5 cursor-pointer"
+                    >
+                      ${renderSvgIcon('refresh', 'w-4 h-4')}
+                      <span>Limpar Todos os Filtros</span>
+                    </button>
+                  `
+                      : ''
+                  }
+                </div>
               </div>
+
+              ${
+                this.isLineChipsExpanded
+                  ? `
+                <div class="mt-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                  <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
+                    <span>Clique em uma montadora para filtrar instantaneamente:</span>
+                    <button
+                      type="button"
+                      data-toggle-line-chips
+                      class="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      ${renderSvgIcon('chevronUp', 'w-3.5 h-3.5')}
+                      <span>Recolher</span>
+                    </button>
+                  </div>
+                  <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1 py-0.5">
+                    <button
+                      type="button"
+                      data-line-chip="ALL"
+                      class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold cursor-pointer transition ${
+                        this.filters.productLine === 'ALL'
+                          ? 'bg-[#1D4ED8] text-white shadow-xs'
+                          : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                      }"
+                    >
+                      Todas as Montadoras
+                    </button>
+                    ${productLines
+                      .map((line) => {
+                        const isSelected = this.filters.productLine === line;
+                        const shortLabel = line.replace(/^Linha\s+/i, '');
+                        return `
+                          <button
+                            type="button"
+                            data-line-chip="${escapeHtml(line)}"
+                            class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold cursor-pointer transition ${
+                              isSelected
+                                ? 'bg-[#1D4ED8] text-white font-bold shadow-xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                            }"
+                          >
+                            Linha ${escapeHtml(shortLabel)}
+                          </button>
+                        `;
+                      })
+                      .join('')}
+                  </div>
+                </div>
+              `
+                  : ''
+              }
             </div>
 
             <!-- Filtros Técnicos Combinados de Balcão (Mobile-First Grid) -->
@@ -872,36 +950,38 @@ class SportinoxCounterCatalogApp {
                 : ''
             }
 
-            <!-- Ações Rápidas do Card (Touch-Friendly Mobile First >= 42px) -->
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                data-open-relations="${escapeHtml(p.id)}"
-                class="min-h-[42px] px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                title="Ver Variantes, Kits e Peças Complementares do Veículo"
-              >
-                ${renderSvgIcon('link', 'w-4 h-4 shrink-0')}
-                <span>Vínculos (${(p.relations || []).length})</span>
-              </button>
+            <!-- Ações Rápidas do Card (Layout Limpo Sem Transbordamento / Touch-Friendly >= 42px) -->
+            <div class="space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  data-open-relations="${escapeHtml(p.id)}"
+                  class="min-h-[40px] px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition truncate"
+                  title="Ver Variantes, Kits e Peças Complementares do Veículo"
+                >
+                  ${renderSvgIcon('link', 'w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400')}
+                  <span class="truncate">Vínculos (${(p.relations || []).length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-edit-product="${escapeHtml(p.id)}"
+                  class="min-h-[40px] px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#1D4ED8] hover:text-white text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition truncate"
+                  title="Editar Produto, Preço, Localização/Prateleira ou Colar Fotos WebP"
+                >
+                  ${renderSvgIcon('edit', 'w-4 h-4 shrink-0')}
+                  <span>Editar</span>
+                </button>
+              </div>
 
               <button
                 type="button"
                 data-copy-whatsapp="${escapeHtml(p.id)}"
-                class="min-h-[42px] px-2.5 py-2 rounded-xl border border-emerald-600/50 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-600 hover:text-white text-emerald-900 dark:text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
-                title="Copiar ficha técnica formatada para WhatsApp"
+                class="w-full min-h-[42px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 cursor-pointer transition shadow-xs"
+                title="Copiar ficha técnica formatada com código, aplicação e medidas para o WhatsApp"
               >
                 ${renderSvgIcon('shareWhatsApp', 'w-4 h-4 shrink-0')}
-                <span>WhatsApp</span>
-              </button>
-
-              <button
-                type="button"
-                data-edit-product="${escapeHtml(p.id)}"
-                class="min-h-[42px] px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#1D4ED8] hover:text-white text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
-                title="Editar Produto, Preço, Localização/Prateleira ou Colar Fotos WebP"
-              >
-                ${renderSvgIcon('edit', 'w-4 h-4 shrink-0')}
-                <span>Editar</span>
+                <span>WhatsApp (Copiar Ficha)</span>
               </button>
             </div>
           </div>
@@ -1096,13 +1176,20 @@ class SportinoxCounterCatalogApp {
       });
     });
 
-    // 3. Filtro por Linha (Select e Chips Rápidos)
+    // 3. Filtro por Linha (Select, Toggle de Recolhimento e Chips Rápidos)
     const lineSelect = document.getElementById('filter-product-line') as HTMLSelectElement | null;
     lineSelect?.addEventListener('change', () => {
       this.filters.productLine = lineSelect.value;
       this.visibleLimit = 48;
       this.executeSub50msSearch();
       this.renderAppShell();
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-toggle-line-chips]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.isLineChipsExpanded = !this.isLineChipsExpanded;
+        this.renderAppShell();
+      });
     });
 
     document.querySelectorAll<HTMLElement>('[data-line-chip]').forEach((chip) => {
@@ -1112,6 +1199,17 @@ class SportinoxCounterCatalogApp {
         this.executeSub50msSearch();
         this.renderAppShell();
       });
+    });
+
+    // Fechamento manual do banner Toast
+    document.querySelector('[data-close-toast]')?.addEventListener('click', () => {
+      if (this.toastTimer) {
+        clearTimeout(this.toastTimer);
+        this.toastTimer = null;
+      }
+      this.statusToastMessage = '';
+      const el = document.querySelector<HTMLElement>('[data-toast-banner]');
+      if (el) el.classList.add('hidden');
     });
 
     // 4. Demais filtros combinados

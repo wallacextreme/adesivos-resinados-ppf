@@ -19,6 +19,7 @@ export type IconName =
   | 'chevronLeft'
   | 'chevronRight'
   | 'chevronDown'
+  | 'chevronUp'
   | 'zoomIn'
   | 'zoomOut'
   | 'maximize'
@@ -70,6 +71,8 @@ const LUCIDE_PATHS: Record<IconName, string> = {
     '<path d="m9 18 6-6-6-6"/>',
   chevronDown:
     '<path d="m6 9 6 6 6-6"/>',
+  chevronUp:
+    '<path d="m18 15-6-6-6 6"/>',
   zoomIn:
     '<circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/>',
   zoomOut:
