@@ -3,7 +3,7 @@
  * Service Worker Offline-First (Cache-First para Imagens .WebP e Assets Estáticos + Stale-While-Revalidate).
  */
 
-const CACHE_NAME = 'sportinox-catalogo-webp-v5';
+const CACHE_NAME = 'adesivos-resinados-ppf-v6';
 const CORE_ASSETS = [
   './',
   './index.html',
