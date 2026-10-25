@@ -65,10 +65,12 @@ class SportinoxCounterCatalogApp {
   private isLineChipsExpanded = false;
   private statusToastMessage = '';
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private deferredPwaInstallPrompt: any = null;
 
   public async bootstrap(): Promise<void> {
     this.loadSavedThemePreference();
     this.registerServiceWorker();
+    this.setupPwaInstallListener();
     await this.storage.init();
 
     // Auto-Sync Incremental Não-Destrutivo com o seed extraído dos PDFs + Playwright
@@ -104,6 +106,21 @@ class SportinoxCounterCatalogApp {
       }
     } catch {
       // Ignora em modo restrito
+    }
+  }
+
+  private setupPwaInstallListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        this.deferredPwaInstallPrompt = e;
+        this.renderAppShell();
+      });
+      window.addEventListener('appinstalled', () => {
+        this.deferredPwaInstallPrompt = null;
+        this.showToast('Sportinox PWA instalado com sucesso!');
+        this.renderAppShell();
+      });
     }
   }
 
@@ -336,6 +353,20 @@ class SportinoxCounterCatalogApp {
                 ${renderSvgIcon('database', 'w-4 h-4')}
                 <span>Gestão &amp; Backup</span>
               </button>
+
+              ${this.deferredPwaInstallPrompt
+                ? `
+                <button
+                  type="button"
+                  data-install-pwa
+                  class="min-h-[40px] px-3.5 py-2 rounded-lg border border-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse"
+                  title="Instalar Catálogo como App PWA Offline"
+                >
+                  ${renderSvgIcon('download', 'w-4 h-4')}
+                  <span>Instalar PWA</span>
+                </button>
+              `
+                : ''}
 
               <!-- Alternador 1-Clique Daylight Counter Mode / Dark Mode Calibrado -->
               <button
@@ -1291,6 +1322,16 @@ class SportinoxCounterCatalogApp {
     });
 
     // 5. Controles da Barra Superior
+    document.querySelector('[data-install-pwa]')?.addEventListener('click', () => {
+      if (this.deferredPwaInstallPrompt) {
+        this.deferredPwaInstallPrompt.prompt();
+        this.deferredPwaInstallPrompt.userChoice.then(() => {
+          this.deferredPwaInstallPrompt = null;
+          this.renderAppShell();
+        });
+      }
+    });
+
     document.querySelector('[data-toggle-theme]')?.addEventListener('click', () => {
       this.isDarkMode = !this.isDarkMode;
       this.applyThemeToDocument();
