@@ -1,8 +1,8 @@
 [package]
 name = "sportinox-catalogo-balcao"
 version = "1.0.0"
-description = "Catálogo Eletrônico Inteligente de Balcão Offline-First — Sportinox Adesivos Resinados"
-authors = ["Sportinox Engineering"]
+description = "Catálogo Eletrônico Inteligente de Balcão Offline-First — Adesivos Resinados & PPF"
+authors = ["Wallace de Paula Soares"]
 edition = "2021"
 
 [lib]

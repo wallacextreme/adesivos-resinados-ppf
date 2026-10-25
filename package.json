@@ -2,7 +2,7 @@
   "name": "sportinox-catalogo-balcao",
   "private": true,
   "version": "1.0.0",
-  "description": "Catálogo Eletrônico Inteligente de Balcão Offline-First — Sportinox Adesivos Resinados, Emblemas, Faixas e PPF",
+  "description": "Catálogo Eletrônico Inteligente de Balcão Offline-First — Adesivos Resinados, Emblemas, Faixas e Películas PPF",
   "type": "module",
   "scripts": {
     "dev": "vite",

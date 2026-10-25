@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Sportinox Catálogo Balcão ${{ github.ref_name }}'
-          releaseBody: 'Instaladores oficiais de balcão para Windows (.exe e .msi) — Sportinox Offline-First.'
+          releaseName: 'Adesivos Resinados & PPF ${{ github.ref_name }}'
+          releaseBody: 'Instaladores oficiais de balcão para Windows (.exe e .msi) — Adesivos Resinados & PPF Offline-First.'
           releaseDraft: false
           prerelease: false

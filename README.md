@@ -1,4 +1,4 @@
-# 🎨 Sportinox — Catálogo Eletrônico Inteligente de Balcão (Adesivos Resinados & PPF)
+# 🎨 Adesivos Resinados & PPF — Catálogo Eletrônico Inteligente de Balcão
 ### **Sistema Completo de Balcão Offline-First • PWA Instalável • Aplicativo Nativo Windows (.exe / .msi via Tauri v2)**
 
 [![PWA Demo](https://img.shields.io/badge/🌐_Demo_Online_(PWA)-2563eb?style=for-the-badge&logo=pwa&logoColor=white)](https://wallacextreme.github.io/sportinox-catalogo-balcao/)
@@ -12,7 +12,7 @@
 
 ## 🎯 Sobre o Projeto
 
-O **Sportinox — Catálogo Inteligente de Balcão** é uma solução de alta performance desenvolvida para autopeças, lojas de acessórios automotivos e balcões de atendimento que comercializam **adesivos resinados, emblemas automotivos, faixas decorativas, protetores de soleira e películas PPF**.
+O **Adesivos Resinados & PPF — Catálogo Inteligente de Balcão** é uma solução de alta performance desenvolvida para autopeças, lojas de acessórios automotivos e balcões de atendimento que comercializam **adesivos resinados, emblemas automotivos, faixas decorativas, protetores de soleira e películas PPF**.
 
 O sistema opera sob o paradigma **Offline-First Absoluto**: funciona 100% sem internet após o primeiro acesso, garantindo busca instantânea sub-50ms em um acervo com mais de **3.396 peças automotivas** e **3.435 imagens WebP em alta definição**.
 
@@ -188,7 +188,7 @@ Os arquivos finais serão salvos em:
 ## 🌐 Instalação como PWA (Progressive Web App)
 
 1. Acesse o catálogo em [https://wallacextreme.github.io/sportinox-catalogo-balcao/](https://wallacextreme.github.io/sportinox-catalogo-balcao/)
-2. No **Google Chrome** ou **Microsoft Edge**, clique no ícone de instalar na barra de endereços (`Instalar Sportinox Catálogo`).
+2. No **Google Chrome** ou **Microsoft Edge**, clique no ícone de instalar na barra de endereços (`Instalar Adesivos Resinados & PPF`).
 3. No **celular (Android/iOS)**, selecione `Adicionar à tela de início`.
 4. O catálogo agora funciona como um aplicativo independente, com ícone próprio e suporte offline contínuo.
 

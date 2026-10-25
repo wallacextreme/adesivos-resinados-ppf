@@ -1,6 +1,6 @@
 /**
  * src/main.ts
- * Ponto de Entrada Principal — Catálogo Inteligente de Balcão Offline-First Sportinox.
+ * Ponto de Entrada Principal — Catálogo Inteligente de Balcão Offline-First Adesivos Resinados & PPF.
  * - Integra 100% dos módulos de domínio, persistência IndexedDB, busca sub-50ms,
  *   conversor WebP client-side, 4 naturezas de vínculos, galeria multi-ângulos e Lightbox 400%.
  * - Destaca o Filtro Rápido por Linha (Macro-Linha + Linha por Montadora) solicitado pelo usuário.
@@ -36,9 +36,9 @@ interface SeedCatalogFileStructure {
 }
 
 const seedPayload = seedCatalogJson as unknown as SeedCatalogFileStructure;
-const THEME_STORAGE_KEY = 'sportinox-counter-theme';
+const THEME_STORAGE_KEY = 'adesivos-ppf-counter-theme';
 
-class SportinoxCounterCatalogApp {
+class AdesivosCounterCatalogApp {
   private storage = new CatalogStorageEngine();
   private searchEngine = new CatalogSearchEngine();
   private lightbox = new StudioLightbox();
@@ -118,7 +118,7 @@ class SportinoxCounterCatalogApp {
       });
       window.addEventListener('appinstalled', () => {
         this.deferredPwaInstallPrompt = null;
-        this.showToast('Sportinox PWA instalado com sucesso!');
+        this.showToast('App Adesivos Resinados & PPF instalado com sucesso!');
         this.renderAppShell();
       });
     }
@@ -212,7 +212,7 @@ class SportinoxCounterCatalogApp {
 
   private formatWhatsAppSummary(product: CatalogProduct): string {
     const lines = [
-      `*SPORTINOX — CATÁLOGO DE BALCÃO*`,
+      `*ADESIVOS RESINADOS & PPF — CATÁLOGO DE BALCÃO*`,
       `Código SKU: *${product.commercialCodeRaw}*`,
       `Peça: ${product.name}`,
       `Linha: ${product.productLine} (${product.macroLine})`,
@@ -289,7 +289,7 @@ class SportinoxCounterCatalogApp {
         <!-- BARRA SUPERIOR DE BALCÃO (MOBILE-FIRST & ALTO CONTRASTE) -->
         <header class="sticky top-0 z-30 bg-white dark:bg-[#1E293B] border-b border-[#E2E8F0] dark:border-slate-700 shadow-xs">
           <div class="max-w-[1640px] mx-auto px-3 sm:px-5 lg:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <!-- Identidade Visual Sportinox -->
+            <!-- Identidade Visual Adesivos Resinados & PPF -->
             <div class="flex items-center gap-3">
               <div class="w-11 h-11 rounded-xl bg-[#1D4ED8] text-white flex items-center justify-center font-mono font-extrabold text-xl shadow-xs shrink-0">
                 SX
@@ -297,7 +297,7 @@ class SportinoxCounterCatalogApp {
               <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                   <h1 class="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-[#0F172A] dark:text-white">
-                    SPORTINOX — CATÁLOGO DE BALCÃO
+                    ADESIVOS RESINADOS & PPF — CATÁLOGO DE BALCÃO
                   </h1>
                   <span class="px-2.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-[#1D4ED8] dark:text-blue-300 text-xs font-extrabold tracking-wide">
                     OFFLINE-FIRST WEBP HD
@@ -1374,7 +1374,7 @@ class SportinoxCounterCatalogApp {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `sportinox-backup-sha256-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `adesivos-ppf-backup-sha256-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       this.showToast(`Backup exportado (SHA-256: ${bundle.checksumSha256.slice(0, 12)}...).`);
@@ -1402,7 +1402,7 @@ class SportinoxCounterCatalogApp {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `sportinox-estoque-precos-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `adesivos-ppf-estoque-precos-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       this.showToast('Planilha CSV de preços e localização exportada.');
@@ -1558,8 +1558,8 @@ class SportinoxCounterCatalogApp {
 }
 
 if (typeof document !== 'undefined' && document.getElementById('app')) {
-  const app = new SportinoxCounterCatalogApp();
+  const app = new AdesivosCounterCatalogApp();
   void app.bootstrap();
 }
 
-export { SportinoxCounterCatalogApp };
+export { AdesivosCounterCatalogApp };

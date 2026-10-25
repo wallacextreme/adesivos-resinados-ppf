@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Sportinox — Gerador de Instaladores Windows (.exe e .msi)
+title Adesivos Resinados & PPF — Gerador de Instaladores Windows (.exe e .msi)
 
 echo ========================================================================
-echo    SPORTINOX — GERADOR DE INSTALADORES NATIVOS WINDOWS (.EXE E .MSI)
+echo    ADESIVOS RESINADOS & PPF — GERADOR DE INSTALADORES NATIVOS WINDOWS (.EXE E .MSI)
 echo    Arquitetura Offline-First (Tauri v2 + Rust + NSIS + WiX)
 echo ========================================================================
 echo.

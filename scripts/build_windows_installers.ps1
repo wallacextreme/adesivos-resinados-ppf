@@ -1,12 +1,12 @@
 # scripts/build_windows_installers.ps1
 # Script Automatizado para Geracao dos Instaladores Nativos Windows (.exe e .msi)
-# Catalogo Inteligente de Balcao Sportinox via Tauri v2 e Rust
+# Catalogo Inteligente de Balcao Adesivos Resinados & PPF via Tauri v2 e Rust
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = "Stop"
 
 Write-Host "========================================================================" -ForegroundColor Cyan
-Write-Host "   SPORTINOX - GERADOR DE INSTALADORES NATIVOS WINDOWS (.EXE E .MSI)   " -ForegroundColor Yellow
+Write-Host "   ADESIVOS RESINADOS & PPF - GERADOR DE INSTALADORES NATIVOS WINDOWS (.EXE E .MSI)   " -ForegroundColor Yellow
 Write-Host "   Arquitetura Offline-First (Tauri v2 + Rust + NSIS + WiX)            " -ForegroundColor Cyan
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host ""
