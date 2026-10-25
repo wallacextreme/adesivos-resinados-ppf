@@ -1,7 +1,7 @@
 # 🎨 Adesivos Resinados & PPF — Catálogo Eletrônico Inteligente de Balcão
 ### **Sistema Completo de Balcão Offline-First • PWA Instalável • Aplicativo Nativo Windows (.exe / .msi via Tauri v2)**
 
-[![PWA Demo](https://img.shields.io/badge/🌐_Demo_Online_(PWA)-2563eb?style=for-the-badge&logo=pwa&logoColor=white)](https://wallacextreme.github.io/sportinox-catalogo-balcao/)
+[![PWA Demo](https://img.shields.io/badge/🌐_Demo_Online_(PWA)-2563eb?style=for-the-badge&logo=pwa&logoColor=white)](https://wallacextreme.github.io/adesivos-resinados-ppf/)
 [![Tauri v2](https://img.shields.io/badge/Tauri_v2-Rust_Desktop-orange?style=for-the-badge&logo=tauri&logoColor=white)](https://tauri.app/)
 [![TypeScript](https://img.shields.io/badge/TypeScript_5.7-Strict-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/Tests-17/17_Pass_(100%25)-10b981?style=for-the-badge&logo=bun&logoColor=white)](tests/)
@@ -109,8 +109,8 @@ Disponível tanto como **PWA instalável** (Desktop e Mobile) quanto como **apli
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/wallacextreme/sportinox-catalogo-balcao.git
-cd sportinox-catalogo-balcao
+git clone https://github.com/wallacextreme/adesivos-resinados-ppf.git
+cd adesivos-resinados-ppf
 
 # 2. Instalar dependências
 bun install
@@ -187,7 +187,7 @@ Os arquivos finais serão salvos em:
 
 ## 🌐 Instalação como PWA (Progressive Web App)
 
-1. Acesse o catálogo em [https://wallacextreme.github.io/sportinox-catalogo-balcao/](https://wallacextreme.github.io/sportinox-catalogo-balcao/)
+1. Acesse o catálogo em [https://wallacextreme.github.io/adesivos-resinados-ppf/](https://wallacextreme.github.io/adesivos-resinados-ppf/)
 2. No **Google Chrome** ou **Microsoft Edge**, clique no ícone de instalar na barra de endereços (`Instalar Adesivos Resinados & PPF`).
 3. No **celular (Android/iOS)**, selecione `Adicionar à tela de início`.
 4. O catálogo agora funciona como um aplicativo independente, com ícone próprio e suporte offline contínuo.
